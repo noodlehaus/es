@@ -3,19 +3,19 @@
 # initialize an ES conn (lambda)
 function es_init($host, $port, $index) {
 
-  $es = "http://{$host}:{$port}/{$index}/";
+  $es = "http://{$host}:{$port}/{$index}";
   $ch = curl_init();
 
   curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
   curl_setopt($ch, CURLOPT_FORBID_REUSE, false);
 
-  return function ($verb, $path, array $data) use ($es, $ch) {
+  return function ($verb, $path, array $data = []) use ($es, $ch) {
 
     curl_setopt($ch, CURLOPT_URL, "{$es}/{$path}");
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $verb);
 
     if (!empty($data)) {
-      curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+      curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
     }
 
     $rs = curl_exec($ch);
@@ -29,7 +29,7 @@ function es_init($host, $port, $index) {
 
 # inserts a document into the ES type collection
 function es_insert($conn, $type, $id, $doc) {
-  return es_call('PUT', "{$type}/{$id}", $doc);
+  return $conn('PUT', "{$type}/{$id}", $doc);
 }
 
 # invokes search endpoint using ES conn (lambda)
